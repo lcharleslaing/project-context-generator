@@ -1,6 +1,6 @@
 {
   "name": "project-context-generator",
-  "version": "1.0.2",
+  "version": "1.0.5",
   "description": "Generates markdown and JSON documentation of a project's file structure.",
   "bin": {
     "project-context-generator": "./index.js"

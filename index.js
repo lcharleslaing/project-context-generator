@@ -1,11 +1,12 @@
 #!/usr/bin/env node
+"use strict";
 import fs from 'fs';
 import path from 'path';
 import { program } from 'commander';
 
 // Read exclusions from .gitignore (if it exists)
 const cwd = process.cwd();
-let defaultExclude = ['.git']; // Add .git to default exclusions
+let defaultExclude = ['.git'];
 try {
     const gitignoreContent = fs.readFileSync(path.join(cwd, '.gitignore'), 'utf-8');
     defaultExclude = [...defaultExclude, ...gitignoreContent.split('\n').map(line => line.trim()).filter(line => line && !line.startsWith('#'))];
@@ -40,6 +41,55 @@ if (!fs.existsSync(markdownOutputDir)) {
 }
 if (!fs.existsSync(jsonOutputDir)) {
     fs.mkdirSync(jsonOutputDir, { recursive: true });
+}
+
+// Function to determine the appropriate comment syntax based on file extension
+function getCommentSyntax(extension) {
+    switch (extension) {
+        case '.js':
+        case '.jsx':
+        case '.ts':
+        case '.tsx':
+            return '//';
+        case '.css':
+        case '.scss':
+        case '.sass':
+            return '/* */';
+        case '.svelte':
+            return ''; // Svelte comment syntax
+        case '.html':
+            return '';
+        case '.md':
+            return '';
+        case '.gitignore':
+            return '#';
+        case '.json':
+            return null; // JSON does not support comments
+        default:
+            return null; // No comment added for unknown extensions
+    }
+}
+
+
+// Function to process each file
+function processFile(filePath, commentSyntax) {
+    let fileContent = fs.readFileSync(filePath, 'utf-8');
+    // Check for shebang before adding comment
+    if (fileContent.startsWith("#!")) {
+        return;  // Skip files with shebangs
+    }
+
+    const relativePath = path.relative(cwd, filePath);
+
+    // Regex to match existing comment with the relative path (or remove incorrect ones)
+    const commentRegex = new RegExp(`^[\\s]*${commentSyntax}\\s*${relativePath}\\s*$`, 'm');
+    fileContent = fileContent.replace(commentRegex, '');
+
+    // Prepend the new comment if the file supports comments
+    if (commentSyntax) {
+        fileContent = `${commentSyntax} ${relativePath}\n${fileContent}`;
+        fs.writeFileSync(filePath, fileContent, 'utf-8');
+    }
 }
 
 // Function to determine if a file/directory should be excluded
@@ -104,7 +154,18 @@ function generateMarkdown() {
     fs.writeFileSync(markdownFilePath, projectScopeMarkdown.join('\n'), 'utf-8');
 }
 
-// Main execution
+
+// --- Main script execution ---
+// Comment files first
+fs.readdirSync(cwd).forEach(file => {
+    const fullPath = path.join(cwd, file);
+    if (!isExcluded(fullPath) && fs.statSync(fullPath).isFile()) {
+        const extension = path.extname(file);
+        const commentSyntax = getCommentSyntax(extension);
+        processFile(fullPath, commentSyntax);
+    }
+});
+
 generateJSON();
 generateMarkdown();
 
