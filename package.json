@@ -1,0 +1,23 @@
+{
+  "name": "project-context-generator",
+  "version": "1.0.0",
+  "description": "Generates markdown and JSON documentation of a project's file structure.",
+  "bin": {
+    "project-context-generator": "./index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "project",
+    "documentation",
+    "markdown",
+    "json"
+  ],
+  "author": "Lee Charles Laing <lcharleslaing@gmail.com>",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "commander": "latest"
+  }
+}
