@@ -3,14 +3,28 @@ import fs from 'fs';
 import path from 'path';
 import { program } from 'commander';
 
+// Read exclusions from .gitignore (if it exists)
+const cwd = process.cwd();
+let defaultExclude = ['.git']; // Add .git to default exclusions
+try {
+    const gitignoreContent = fs.readFileSync(path.join(cwd, '.gitignore'), 'utf-8');
+    defaultExclude = [...defaultExclude, ...gitignoreContent.split('\n').map(line => line.trim()).filter(line => line && !line.startsWith('#'))];
+} catch (err) {
+    // If .gitignore is missing, it will just continue with the default exclude list.
+}
+
 // CLI options
 program
-    .option('-e, --exclude <dirs>', 'Comma-separated list of directories to exclude', 'node_modules,.svelte-kit,.vscode,projectContext')
-    .option('-f, --exclude-files <files>', 'Comma-separated list of files to exclude', 'package-lock.json')
+    .option('-e, --exclude <dirs>', 'Comma-separated list of additional directories to exclude')
+    .option('-f, --exclude-files <files>', 'Comma-separated list of additional files to exclude')
     .parse(process.argv);
 
 const options = program.opts();
-const cwd = process.cwd();
+const additionalExcludeDirs = options.exclude ? options.exclude.split(',') : [];
+const additionalExcludeFiles = options.excludeFiles ? options.excludeFiles.split(',') : [];
+const excludeDirs = [...defaultExclude, ...additionalExcludeDirs];
+const excludeFiles = [...additionalExcludeFiles];
+
 const outputDir = path.join(cwd, 'projectContext');
 const markdownOutputDir = path.join(outputDir, 'markdown');
 const jsonOutputDir = path.join(outputDir, 'json');
@@ -19,8 +33,6 @@ const markdownFilename = `projectScope_${timestamp}.md`;
 const jsonFilename = `projectStructure_${timestamp}.json`;
 const markdownFilePath = path.join(markdownOutputDir, markdownFilename);
 const jsonFilePath = path.join(jsonOutputDir, jsonFilename);
-const excludeDirs = options.exclude.split(',');
-const excludeFiles = options.excludeFiles.split(',');
 
 // Create output directories if they don't exist
 if (!fs.existsSync(markdownOutputDir)) {

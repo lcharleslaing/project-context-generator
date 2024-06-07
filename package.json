@@ -1,12 +1,12 @@
 {
   "name": "project-context-generator",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Generates markdown and JSON documentation of a project's file structure.",
   "bin": {
     "project-context-generator": "./index.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "context": "npx project-context-generator"
   },
   "keywords": [
     "project",
