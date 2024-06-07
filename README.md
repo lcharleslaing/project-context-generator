@@ -1,3 +1,5 @@
+<!-- project-context-generator\README.md -->
+README.mdundefined
 # Project Context Generator
 
 [![npm version](https://img.shields.io/npm/v/project-context-generator)](https://www.npmjs.com/package/project-context-generator)
